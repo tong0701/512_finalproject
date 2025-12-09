@@ -324,23 +324,159 @@ def wait_for_press():
 
 # ==================== HIGH SCORE MANAGEMENT ====================
 
-HIGH_SCORE_FILE = "highscore.txt"
+HIGH_SCORES_FILE = "highscores.txt"
 
-def load_high_score():
-    """Load high score from file"""
+def load_high_scores():
+    """Load top 3 high scores from file"""
     try:
-        with open(HIGH_SCORE_FILE, 'r') as f:
-            return int(f.read().strip())
+        with open(HIGH_SCORES_FILE, 'r') as f:
+            lines = f.readlines()
+            scores = []
+            for line in lines[:3]:  # Only top 3
+                parts = line.strip().split(',')
+                if len(parts) == 2:
+                    name = parts[0].strip()
+                    score = int(parts[1].strip())
+                    scores.append({'name': name, 'score': score})
+            return scores
     except:
-        return 0
+        return []
 
-def save_high_score(score):
-    """Save high score to file"""
+def save_high_scores(scores):
+    """Save top 3 high scores to file"""
     try:
-        with open(HIGH_SCORE_FILE, 'w') as f:
-            f.write(str(score))
+        with open(HIGH_SCORES_FILE, 'w') as f:
+            for entry in scores[:3]:  # Only save top 3
+                f.write(f"{entry['name']},{entry['score']}\n")
     except:
         pass
+
+def add_high_score(name, score):
+    """Add a new high score and return updated list (top 3)"""
+    scores = load_high_scores()
+    scores.append({'name': name, 'score': score})
+    scores.sort(key=lambda x: x['score'], reverse=True)  # Sort by score descending
+    scores = scores[:3]  # Keep only top 3
+    save_high_scores(scores)
+    return scores
+
+def is_high_score(score):
+    """Check if score qualifies for high score board (top 3)"""
+    scores = load_high_scores()
+    if len(scores) < 3:
+        return True
+    return score > scores[-1]['score']  # Compare with 3rd place
+
+# ==================== NAME INPUT ====================
+
+def input_player_name():
+    """Input player name (3 characters) using encoder"""
+    name = ['A', 'A', 'A']  # Initial letters
+    current_pos = 0  # Current character position (0, 1, 2)
+    current_char_idx = 0  # Current character index in alphabet (0-25 for A-Z)
+    
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    
+    while True:
+        display.fill(0)
+        display.rect(0, 0, 128, 64, 1)
+        
+        # Title
+        draw_centered_text("ENTER NAME", 8, 1)
+        
+        # Display name with cursor
+        name_str = ''.join(name)
+        x_start = (128 - len(name_str) * 6) // 2
+        y_pos = 28
+        
+        for i, char in enumerate(name_str):
+            x_pos = x_start + i * 6
+            if i == current_pos:
+                # Draw cursor (underline or highlight)
+                display.fill_rect(x_pos - 1, y_pos + 8, 8, 2, 1)
+                display.text(char, x_pos, y_pos, 0)  # Inverted
+            else:
+                display.text(char, x_pos, y_pos, 1)
+        
+        # Instructions
+        draw_centered_text("Rotate: Change", 45, 1)
+        draw_centered_text("Press: Confirm", 54, 1)
+        
+        safe_show()
+        
+        # Handle encoder navigation
+        direction = encoder.get_direction()
+        if direction == 'right':
+            current_char_idx = (current_char_idx + 1) % 26
+            name[current_pos] = alphabet[current_char_idx]
+            tone(600, 0.02)
+            time.sleep(0.05)
+        elif direction == 'left':
+            current_char_idx = (current_char_idx - 1) % 26
+            name[current_pos] = alphabet[current_char_idx]
+            tone(600, 0.02)
+            time.sleep(0.05)
+        
+        # Handle button press
+        if button.value == False:
+            tone(1500, 0.1)
+            while button.value == False:
+                time.sleep(0.01)
+            time.sleep(0.1)
+            
+            # Move to next character
+            current_pos += 1
+            if current_pos >= 3:
+                # All characters selected, return name
+                return ''.join(name)
+            # Reset character index for next position
+            current_char_idx = alphabet.index(name[current_pos])
+        
+        time.sleep(0.01)
+
+# ==================== HIGH SCORE BOARD DISPLAY ====================
+
+def show_high_score_board():
+    """Display top 3 high scores"""
+    scores = load_high_scores()
+    
+    while True:
+        display.fill(0)
+        display.rect(0, 0, 128, 64, 1)
+        
+        # Title
+        draw_centered_text("HIGH SCORES", 5, 1)
+        
+        # Display top 3 scores
+        y_start = 18
+        for i, entry in enumerate(scores[:3]):
+            rank = f"{i+1}."
+            name = entry['name']
+            score = entry['score']
+            line = f"{rank} {name}  {score}"
+            
+            # Left align with some offset
+            x_pos = 8
+            y_pos = y_start + i * 14
+            display.text(line, x_pos, y_pos, 1)
+        
+        # Instructions
+        if len(scores) == 0:
+            draw_centered_text("No scores yet", 35, 1)
+        
+        draw_centered_text("Press to continue", 54, 1)
+        
+        safe_show()
+        
+        # Wait for button press
+        if button.value == False:
+            tone(1500, 0.1)
+            while button.value == False:
+                time.sleep(0.01)
+            time.sleep(0.1)
+            return
+        
+        time.sleep(0.01)
 
 # ==================== DIFFICULTY SELECTION MENU ====================
 
@@ -998,7 +1134,8 @@ def run_level(level_idx, config, difficulty):
 
 # ==================== MAIN GAME LOOP ====================
 
-high_score = load_high_score()
+# Load high scores at startup
+high_scores = load_high_scores()
 
 while True:
     try:
@@ -1018,6 +1155,9 @@ while True:
                 pixels.fill(0)
             except:
                 pass
+        
+        # Input player name (before difficulty selection)
+        player_name = input_player_name()
         
         # Difficulty selection
         selected_difficulty = show_difficulty_menu()
@@ -1042,16 +1182,19 @@ while True:
                 tone(1000, 0.2)
                 tone(2000, 0.4)
                 
-                # Check for new high score
-                if total_score > high_score:
-                    high_score = total_score
-                    save_high_score(high_score)
+                # Check for high score
+                if is_high_score(total_score):
+                    # Add to high score board
+                    high_scores = add_high_score(player_name, total_score)
                     draw_new_high_score_animation()
-                    show_message_box("HIGH SCORE!", f"{high_score}", "")
+                    show_message_box("NEW HIGH SCORE!", f"{player_name}: {total_score}", "")
                 else:
-                    show_message_box("HIGH SCORE", f"{high_score}", f"Your: {total_score}")
+                    # Show current high scores
+                    pass
                 
-                wait_for_press()
+                # Show high score board
+                show_high_score_board()
+                
                 game_active = False
                 break
             
@@ -1068,16 +1211,18 @@ while True:
                 # Game over
                 draw_fail_animation()
                 
-                # Check for new high score
-                if total_score > high_score:
-                    high_score = total_score
-                    save_high_score(high_score)
+                # Check for high score
+                if is_high_score(total_score):
+                    # Add to high score board
+                    high_scores = add_high_score(player_name, total_score)
                     draw_new_high_score_animation()
-                    show_message_box("GAME OVER", f"New High: {high_score}", "PRESS -> MENU")
+                    show_message_box("GAME OVER", f"New High Score!", f"{player_name}: {total_score}")
                 else:
-                    show_message_box("GAME OVER", f"Score: {total_score}", f"High: {high_score}")
+                    show_message_box("GAME OVER", f"Score: {total_score}", "PRESS -> BOARD")
+                    wait_for_press()
                 
-                wait_for_press()
+                # Show high score board
+                show_high_score_board()
                 game_active = False
         
         # Reset splash flag for next game
