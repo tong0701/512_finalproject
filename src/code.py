@@ -4,10 +4,10 @@ Bomb Master - Bop-It Style Reaction Game for ESP32-C3 (CircuitPython)
 Hardware Pin Map:
 - OLED SSD1306 (I2C): SCL=D5, SDA=D4
 - ADXL345 Accelerometer (I2C): Shared bus
-- Rotary Encoder: CLK=D2, DT=D3, SW=D7 (PRESS button)
+- Rotary Encoder: CLK=D2, DT=D3, SW=D7 (PRESS button for game input)
 - NeoPixel RGB LED: D0
 - Buzzer PWM: D1
-- LiPo Battery + Power Switch
+- LiPo Battery + Independent Power Switch (hardware switch, controls battery connection, no GPIO)
 
 Required Libraries (place in /lib folder):
 - adafruit_ssd1306
