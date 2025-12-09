@@ -29,8 +29,11 @@ code.py
 ├── Accelerometer Filter Class (Lines 116-187)
 ├── Encoder Class (Lines 189-252)
 ├── Helper Functions (Lines 261-323)
-├── High Score Management (Lines 325-343)
-├── UI Functions (Lines 345-640)
+├── High Score Management (Lines 325-368)
+├── Name Input (Lines 370-435)
+├── High Score Board Display (Lines 437-465)
+├── Difficulty Selection Menu (Lines 467-509)
+├── UI Functions (Lines 511-706)
 ├── Animation Functions (Lines 642-798)
 ├── Game Logic Functions (Lines 800-999)
 └── Main Game Loop (Lines 1001-1093)
@@ -118,6 +121,11 @@ Splash Animation (draw_upgraded_splash)
   ↓
 "Press to Start" Screen (wait_for_press)
   ↓
+Player Name Input (input_player_name)
+  - 3 characters (A-Z)
+  - Rotary encoder to select
+  - Press to confirm each character
+  ↓
 Difficulty Selection Menu (show_difficulty_menu)
   ↓
 ┌─────────────────────────────────┐
@@ -144,6 +152,13 @@ Difficulty Selection Menu (show_difficulty_menu)
 └─────────────────────────────────┘
   ↓
 High Score Check
+  - Check if score qualifies for top 3
+  - If yes: Add to high score board with player name
+  - Show "NEW HIGH SCORE!" animation (if qualified)
+  ↓
+High Score Board Display (show_high_score_board)
+  - Show top 3 scores with player names
+  - Press to continue
   ↓
 Return to Splash (loop restarts)
 ```
@@ -259,6 +274,29 @@ Return True, score
 - Descending buzzer tone
 
 ### Game Logic Functions
+
+#### `input_player_name()`
+**Purpose**: Input 3-character player name before difficulty selection
+- Uses rotary encoder to select A-Z
+- Press button to confirm each character
+- Returns string of 3 characters
+- Display shows current selection with cursor underline
+
+#### `show_high_score_board()`
+**Purpose**: Display top 3 high scores with player names
+- Reads from `highscores.txt`
+- Shows: `1. ABC  1234`, `2. XYZ  1000`, etc.
+- Waits for button press to continue
+
+#### `is_high_score(score)`
+**Purpose**: Check if score qualifies for top 3
+- Returns True if board has < 3 entries OR score > 3rd place score
+
+#### `add_high_score(name, score)`
+**Purpose**: Add new high score and maintain top 3
+- Adds entry, sorts by score (descending), keeps only top 3
+- Saves to `highscores.txt`
+- Returns updated list
 
 #### `show_difficulty_menu()`
 **Purpose**: Difficulty selection screen
@@ -429,13 +467,31 @@ Total score = sum of all level scores
 ```
 Game ends
   ↓
-Check: total_score > high_score?
+Check: is_high_score(total_score)?
+  - Compares with 3rd place or checks if board has < 3 entries
   ↓
-Yes → Update high_score
-      → Save to highscore.txt
+Yes → Add player_name and score to high score board
+      → Sort and keep top 3
+      → Save to highscores.txt (format: "NAME,SCORE")
       → Show "NEW HIGH SCORE!" animation
   ↓
-Show high score screen
+Show high score board (top 3 with names)
+  ↓
+Press to continue
+```
+
+### Name Input Flow
+```
+After splash screen
+  ↓
+Display "ENTER NAME"
+  ↓
+For each of 3 characters:
+  - Rotate encoder: Select A-Z
+  - Press: Confirm character → Move to next
+  ↓
+After 3rd character confirmed:
+  - Press again → Proceed to difficulty selection
 ```
 
 ### Time Management
@@ -575,7 +631,7 @@ if fill_w > 0:
 - A: Three triggers: total magnitude > 13, accumulated change > 3, or single change > 4. Must hold for 1.5 seconds after trigger.
 
 **Q: How does scoring work?**
-- A: +10 points per successful action, +50 bonus per completed level. High score saved to file.
+- A: +10 points per successful action, +50 bonus per completed level. Top 3 high scores saved with player names to `highscores.txt`.
 
 **Q: What happens when time runs out?**
 - A: Game immediately ends, shows Game Over screen, checks for high score.
@@ -585,6 +641,9 @@ if fill_w > 0:
 
 **Q: How does difficulty affect gameplay?**
 - A: Only affects time limit (multiplier: 1.2x/1.0x/0.8x). All other mechanics stay the same.
+
+**Q: How does the high score board work?**
+- A: Before difficulty selection, players enter 3-character name (A-Z) using encoder. Top 3 scores are saved with names to onboard memory. High score board displays after game ends.
 
 ---
 
