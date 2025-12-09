@@ -12,11 +12,13 @@ Hardware used: **ESP32‑C3 (Seeed XIAO), SSD1306 128×64 OLED, ADXL345 accelero
 - **SHAKE** – shake the device (detected by ADXL345)
 
 ### 2.2 Game Loop Structure
-- Splash animation → “PRESS TO START”
+- Splash animation → "PRESS TO START"
+- **Player name input** (3 characters, A-Z, using rotary encoder)
 - Difficulty selection (Easy / Medium / Hard)
 - Level start screen → press to ready → countdown (3,2,1,GO)
 - Per‑move instruction (LEFT/RIGHT/PRESS; final move is SHAKE) with time limit and correctness check
 - Level up after all moves; failure shows Game Over; after level 10 shows Win screen
+- **High score board** (top 3 scores with player names) displayed after game ends
 
 ## 3. Difficulty Settings
 - **Easy:** level time × 1.2  
@@ -63,13 +65,25 @@ If you have PNG versions (system_diagram.png, circuit_diagram.png), they can be 
 - Internal battery compartment with access panel for service/debug.  
 - 3D‑printed shell (e.g., PETG/PLA) for rigidity; non‑yellow filament per course constraint.
 
-## 8. Running the Game
+## 8. High Score System
+- **Name Input**: Before difficulty selection, players enter a 3-character name (A-Z)
+  - Use rotary encoder to select letters (rotate left/right)
+  - Press button to confirm each character
+  - After 3 characters are confirmed, press again to proceed
+- **High Score Board**: Top 3 scores are saved to onboard memory (`highscores.txt`)
+  - Scores are automatically sorted (highest first)
+  - Displayed after game over or completion
+  - Format: `1. ABC  1234`, `2. XYZ  1000`, `3. DEF  800`
+  - New high scores trigger special animation
+- **Persistent Storage**: High scores persist across power cycles (stored in microcontroller flash)
+
+## 9. Running the Game
 1. Flash **CircuitPython for ESP32‑C3** onto the XIAO.  
 2. Copy required libs to `/lib/` on CIRCUITPY: `adafruit_ssd1306.mpy`, `adafruit_adxl34x.mpy`, `neopixel.mpy`, `adafruit_bus_device/` (and `adafruit_display_text/` if used).  
 3. Copy `code.py` (from `src/` in this repo) to the root of CIRCUITPY as `code.py`.  
-4. Eject and reset. Splash plays → press to start → choose difficulty → countdown → play.  
+4. Eject and reset. Splash plays → enter name → choose difficulty → countdown → play.  
 
-## 9. Repo Structure
+## 10. Repo Structure
 ```
 bomb-master/
 ├── README.md                  # Project documentation
@@ -88,9 +102,9 @@ bomb-master/
     └── adafruit_display_text/ (if used)
 ```
 
-## 10. Future Improvements
-- Add high‑score saving and per‑session stats.  
+## 11. Future Improvements
 - More move types or combo chains.  
 - Richer 90s‑style sound/visual effects.  
 - Dynamic difficulty scaling based on player performance.
+- Additional statistics tracking (games played, average score, etc.).
 
