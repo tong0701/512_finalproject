@@ -53,11 +53,13 @@ Actual per‑difficulty time = base time × difficulty time factor above.
 - **LiPo battery + independent hardware power switch:** portable power with physical on/off control (hardware switch, no GPIO, completely cuts battery connection).  
 
 ## 6. System & Circuit Diagrams
-Circuit diagrams are available in the `circuit-diagrams/` folder:
-- `circuit_diagrams.pdf` - Circuit schematic and system diagram
-- `circuit_diagrams.kicad_sch` - KiCad source file
-
-If you have PNG versions (system_diagram.png, circuit_diagram.png), they can be placed in the same folder.
+Documentation files are organized in the `Documentation/` folder:
+- **Circuit diagrams** (`Documentation/circuit/`):
+  - `circuit_diagrams.pdf` - Circuit schematic
+  - `circuit_diagrams.kicad_sch` - KiCad source file
+  - `circuit_diagrams.ps` - PostScript version
+- **System diagrams** (`Documentation/system/`):
+  - `systemdiagram.drawio.png` - System block diagram
 
 ## 7. Enclosure Design
 - Handheld rectangular case; OLED window centered; encoder/button on front.  
@@ -91,9 +93,12 @@ bomb-master/
 │   └── code.py               # Main game code (CircuitPython)
 ├── docs/
 │   └── CODE_STRUCTURE.md     # Code structure and flow guide
-├── circuit-diagrams/
-│   ├── system_diagram.png    # System block diagram
-│   └── circuit_diagram.png   # Circuit schematic
+├── Documentation/
+│   ├── circuit/              # Circuit diagrams
+│   │   ├── circuit_diagrams.pdf
+│   │   └── circuit_diagrams.kicad_sch
+│   └── system/               # System diagrams
+│       └── systemdiagram.drawio.png
 └── lib/                       # Required CircuitPython libs (copy to device)
     ├── adafruit_ssd1306.mpy
     ├── adafruit_adxl34x.mpy
