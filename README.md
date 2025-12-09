@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 Bomb Master is a 90s‑style handheld electronic reaction game. The OLED shows a command, you perform the matching physical action, the game checks timing/correctness, and you progress through 10 increasingly challenging levels.  
-Hardware used: **ESP32‑C3 (Seeed XIAO), SSD1306 128×64 OLED, ADXL345 accelerometer, rotary encoder (with push button), NeoPixel RGB LED, piezo buzzer, LiPo battery, power switch.**
+Hardware used: **ESP32‑C3 (Seeed XIAO), SSD1306 128×64 OLED, ADXL345 accelerometer, rotary encoder (with push button on D7 for game input), NeoPixel RGB LED, piezo buzzer, LiPo battery, independent hardware power switch.**
 
 ## 2. How to Play
 ### 2.1 Game Actions
@@ -45,10 +45,10 @@ Actual per‑difficulty time = base time × difficulty time factor above.
 - **ESP32‑C3 (XIAO):** runs CircuitPython game loop and state machine.  
 - **SSD1306 OLED:** shows commands, timers, countdowns, and status.  
 - **ADXL345 accelerometer:** detects SHAKE via magnitude/variation thresholds and hold time.  
-- **Rotary encoder (CLK=D2, DT=D3, SW=D7):** primary input for LEFT/RIGHT and PRESS.  
+- **Rotary encoder (CLK=D2, DT=D3, SW=D7):** primary input for LEFT/RIGHT rotations and PRESS action (D7 button for game input).  
 - **NeoPixel (D0):** visual feedback (splash, success/fail, victory).  
 - **Buzzer (D1, PWM):** audio cues for countdown, success, failure, splash.  
-- **LiPo battery + switch:** portable power and hard cutoff.  
+- **LiPo battery + independent hardware power switch:** portable power with physical on/off control (hardware switch, no GPIO, completely cuts battery connection).  
 
 ## 6. System & Circuit Diagrams
 Circuit diagrams are available in the `circuit-diagrams/` folder:
